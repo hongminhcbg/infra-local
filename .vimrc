@@ -16,6 +16,9 @@ call plug#begin('~/.vim/plugged')
 
 " Make sure you use single quotes
 
+" multi cursor 
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+
 " Shorthand notation; fetches https://github.com/junegunn/vim-easy-align
 Plug 'junegunn/vim-easy-align'
 
@@ -53,8 +56,9 @@ Plug 'SirVer/ultisnips'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-"search plugin
-Plug 'junegunn/fzf.vim'
+" search plugin
+Plug 'dyng/ctrlsf.vim'
+
 call plug#end()
 " cursor diff normal mode and insert mode
 :autocmd InsertEnter * set cul
@@ -99,6 +103,7 @@ set nocursorcolumn              " Do not highlight column (speeds up highlightin
 set nocursorline                " Do not highlight cursor (speeds up highlighting)
 set lazyredraw                  " Wait to redraw
 
+let NERDTreeShowHidden=1
 " Enable to copy to clipboard for operations like yank, delete, change and put
 " http://stackoverflow.com/questions/20186975/vim-mac-how-to-copy-to-clipboard-without-pbcopy
 if has('unnamedplus')
