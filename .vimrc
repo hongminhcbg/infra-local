@@ -8,11 +8,15 @@ set shiftwidth=4    " Indents will have a width of 4
 set softtabstop=4   " Sets the number of columns for a TAB
 
 set expandtab       " Expand TABs to spaces
-set clipboard=unnamedplus " set clipboard
+set clipboard=unnamed " set clipboard
 " F5 toggle
-map <silent> <F5> :NERDTreeToggle<CR>
+map <silent> <C-x> :NERDTreeToggle<CR>
 
 call plug#begin('~/.vim/plugged')
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+Plug 'epmatsw/ag.vim'
 
 " Make sure you use single quotes
 
@@ -24,9 +28,6 @@ Plug 'junegunn/vim-easy-align'
 
 " Any valid git URL is allowed
 Plug 'https://github.com/junegunn/vim-github-dashboard.git'
-
-" Multiple Plug commands can be written in a single line using | separators
-Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 
 " On-demand loading
 Plug 'scrooloose/nerdtree'
@@ -52,12 +53,11 @@ Plug 'iamcco/file-manager.vim'
 Plug 'joshdick/onedark.vim'
 Plug 'fatih/molokai'
 Plug 'AndrewRadev/splitjoin.vim'
-Plug 'SirVer/ultisnips'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " search plugin
-Plug 'dyng/ctrlsf.vim'
+Plug 'mileszs/ack.vim'
 
 call plug#end()
 " cursor diff normal mode and insert mode
@@ -123,6 +123,7 @@ set t_Co=256
 let g:rehash256 = 1
 let g:molokai_original = 1
 colorscheme molokai
+hi Normal guibg=NONE ctermbg=NONE
 
 """"""""""""""""""""""
 "      Mappings      "
@@ -130,11 +131,6 @@ colorscheme molokai
 
 " Set leader shortcut to a comma ','. By default it's the backslash
 let mapleader = ","
-
-" Jump to next error with Ctrl-n and previous error with Ctrl-m. Close the
-" quickfix window with <leader>a
-map <C-n> :cnext<CR>
-map <C-m> :cprevious<CR>
 nnoremap <leader>a :cclose<CR>
 
 " ctrl-w to rename 
@@ -399,19 +395,33 @@ nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
 nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+" ack.vim --- {{{
 
-" Search keymap 
-" nnoremap <silent> <Leader><Leader> :Files<CR>
-nnoremap <silent> <expr> <Leader><Leader> (expand('%') =~ 'NERD_tree' ? "\<c-w>\<c-w>" : '').":Files\<cr>"
-nnoremap <silent> <Leader>C        :Colors<CR>
-nnoremap <silent> <Leader><Enter>  :Buffers<CR>
-nnoremap <silent> <Leader>L        :Lines<CR>
-nnoremap <silent> <Leader>ag       :Ag <C-R><C-W><CR>
-nnoremap <silent> <Leader>AG       :Ag <C-R><C-A><CR>
-xnoremap <silent> <Leader>ag       y:Ag <C-R>"<CR>
-nnoremap <silent> <Leader>`        :Marks<CR>
-" nnoremap <silent> q: :History:<CR>
-" nnoremap <silent> q/ :History/<CR>
+" Use ripgrep for searching ⚡️
+" Options include:
+" --vimgrep -> Needed to parse the rg response properly for ack.vim
+" --type-not sql -> Avoid huge sql file dumps as it slows down the search
+" --smart-case -> Search case insensitive if all lowercase pattern, Search case sensitively otherwise
+let g:ackprg = 'rg --vimgrep --type-not sql --smart-case'
 
-" set ag 
-let g:ackprg = 'ag --nogroup --nocolor --column'
+" Auto close the Quickfix list after pressing '<enter>' on a list item
+let g:ack_autoclose = 1
+
+" Any empty ack search will search for the work the cursor is on
+let g:ack_use_cword_for_empty_search = 1
+
+" Don't jump to first match
+cnoreabbrev Ack Ack!
+
+" Maps <leader>/ so we're ready to type the search keyword
+nnoremap <Leader>/ :Ack!<Space>
+" }}}
+
+" Navigate quickfix list with ease
+nnoremap <silent> [q :cprevious<CR>
+nnoremap <silent> ]q :cnext<CR>
+
+let g:airline_powerline_fonts = 1
+set rtp+=/usr/local/opt/fzf
+
+
