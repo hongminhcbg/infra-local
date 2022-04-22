@@ -15,7 +15,7 @@ map <silent> <C-x> :NERDTreeToggle<CR>
 call plug#begin('~/.vim/plugged')
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-
+Plug 'phaazon/hop.nvim'
 Plug 'epmatsw/ag.vim'
 
 " Make sure you use single quotes
@@ -68,14 +68,15 @@ call plug#end()
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | NERDTree | endif
 """"""""""""""""""""""
-"      Settings      "
+"      Settings     "
 """"""""""""""""""""""
+if has('ttyscroll')
+    set ttyscroll=3 " Speedup scrolling
+end 
 set nocompatible                " Enables us Vim specific features
 filetype off                    " Reset filetype detection first ...
 filetype plugin indent on       " ... and enable filetype detection
 set ttyfast                     " Indicate fast terminal conn for faster redraw
-set ttymouse=xterm2             " Indicate terminal type for mouse codes
-set ttyscroll=3                 " Speedup scrolling
 set laststatus=2                " Show status line always
 set encoding=utf-8              " Set default encoding to UTF-8
 set autoread                " Automatically read changed files
@@ -139,12 +140,8 @@ map <silent> <c-w> :GoRename <CR>
 " ctrl-shift-l to format 
 map <silent> <c-s-l> :GoFmt <CR>  
 
-
-" Visual linewise up and down by default (and use gj gk to go quicker)
-noremap <Up> gk
-noremap <Down> gj
-noremap j gj
-noremap k gk
+" searce hotkey
+nnoremap <C-l> :noh <CR>
 
 " Search mappings: These will make it so that going to the next one in a
 " search will center on the line it's found in.
@@ -359,10 +356,6 @@ if has('nvim-0.4.0') || has('patch-8.2.0750')
   vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 endif
 
-" Use CTRL-S for selections ranges.
-" Requires 'textDocument/selectionRange' support of language server.
-nmap <silent> <C-s> <Plug>(coc-range-select)
-xmap <silent> <C-s> <Plug>(coc-range-select)
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocAction('format')
@@ -425,3 +418,8 @@ let g:airline_powerline_fonts = 1
 set rtp+=/usr/local/opt/fzf
 
 
+nnoremap <Down> :echo "noob"<cr>
+nnoremap <Up> :echo "noob"<cr>
+nnoremap <Left> :echo "noob"<cr>
+nnoremap <Right> :echo "noob"<cr>
+nnoremap <C-s> :HopWord <cr>
