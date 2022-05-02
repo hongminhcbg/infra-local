@@ -9,6 +9,7 @@ set softtabstop=4   " Sets the number of columns for a TAB
 
 set expandtab       " Expand TABs to spaces
 set clipboard=unnamed " set clipboard
+set termguicolors
 " F5 toggle
 map <silent> <C-x> :NERDTreeToggle<CR>
 
@@ -17,7 +18,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'phaazon/hop.nvim'
 Plug 'epmatsw/ag.vim'
-
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 " Make sure you use single quotes
 
 " multi cursor 
@@ -35,9 +36,6 @@ Plug 'tpope/vim-fireplace', { 'for': 'clojure' }
 
 " Using a non-default branch
 Plug 'rdnetto/YCM-Generator', { 'branch': 'stable' }
-
-" Using a tagged release; wildcard allowed (requires git 1.9.2 or above)
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Plugin options
 Plug 'nsf/gocode', { 'tag': 'v.20150303', 'rtp': 'vim' }
@@ -58,6 +56,8 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " search plugin
 Plug 'mileszs/ack.vim'
+
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
 call plug#end()
 " cursor diff normal mode and insert mode
@@ -111,13 +111,14 @@ if has('unnamedplus')
   set clipboard^=unnamed
   set clipboard^=unnamedplus
 endif
-
-" This enables us to undo files even if you exit Vim.
-if has('persistent_undo')
-  set undofile
-  set undodir=~/.config/vim/tmp/undo//
-endif
-
+" Vim aotu closing braces
+inoremap " ""<left>
+inoremap ' ''<left>
+inoremap ( ()<left>
+inoremap [ []<left>
+inoremap { {}<left>
+inoremap {<CR> {<CR>}<ESC>O
+inoremap {;<CR> {<CR>};<ESC>O
 " Colorscheme
 syntax enable
 set t_Co=256
@@ -126,35 +127,22 @@ let g:molokai_original = 1
 colorscheme molokai
 hi Normal guibg=NONE ctermbg=NONE
 
+"kgolang annotate"
+autocmd FileType go nmap gtj :CocCommand go.tags.add json<cr>
+autocmd FileType go nmap gty :CocCommand go.tags.add yaml<cr>
+autocmd FileType go nmap gtx :CocCommand go.tags.clear<cr>
+autocmd FileType go nmap <c-g> :CocCommand go.test.generate.function<cr>
+
 """"""""""""""""""""""
 "      Mappings      "
 """"""""""""""""""""""
-
-" Set leader shortcut to a comma ','. By default it's the backslash
-let mapleader = ","
-nnoremap <leader>a :cclose<CR>
-
-" ctrl-w to rename 
-map <silent> <c-w> :GoRename <CR>  
+inoremap <c-j> <esc>ji
+inoremap <c-k> <esc>ki
+inoremap <c-h> <esc>i
+inoremap <c-l> <esc>la
 
 " ctrl-shift-l to format 
 map <silent> <c-s-l> :GoFmt <CR>  
-
-" searce hotkey
-nnoremap <C-l> :noh <CR>
-
-" Search mappings: These will make it so that going to the next one in a
-" search will center on the line it's found in.
-nnoremap n nzzzv
-nnoremap N Nzzzv
-
-" Act like D and C
-nnoremap Y y$
-
-" Enter automatically into the files directory
-autocmd BufEnter * silent! lcd %:p:h
-
-
 """""""""""""""""""""
 "      Plugins      "
 """""""""""""""""""""
@@ -172,10 +160,6 @@ let g:go_highlight_extra_types = 1
 let g:go_highlight_generate_tags = 1
 let g:go_def_mode='gopls'
 let g:go_info_mode='gopls'
-" Open :GoDeclsDir with ctrl-g
-nmap <C-g> :GoDeclsDir<cr>
-imap <C-g> <esc>:<C-u>GoDeclsDir<cr>
-
 
 augroup go
   autocmd!
@@ -216,18 +200,22 @@ augroup go
   autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
 augroup END
 
-" build_go_files is a custom function that builds or compiles the test file.
-" It calls :GoBuild if its a Go file, or :GoTestCompile if it's a test file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
+" searce hotkey
+nnoremap <C-l> :noh <CR>
 
-" Set internal encoding of vim, not needed on neovim, since coc.nvim using some
+" Search mappings: These will make it so that going to the next one in a
+" search will center on the line it's found in.
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+" Enter automatically into the files directory
+autocmd BufEnter * silent! lcd %:p:h
+
+
+"""""""""""""""""""""
+"      Plugins      "
+"""""""""""""""""""""
+
 " unicode characters in the file autoload/float.vim
 set encoding=utf-8
 
@@ -293,7 +281,7 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-
+nmap <silent> <c-w> <Plug>(coc-rename)
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
@@ -309,43 +297,6 @@ endfunction
 
 " Highlight the symbol and its references when holding the cursor.
 autocmd CursorHold * silent call CocActionAsync('highlight')
-
-" Symbol renaming.
-nmap <leader>rn <Plug>(coc-rename)
-
-" Formatting selected code.
-xmap <leader>f  <Plug>(coc-format-selected)
-nmap <leader>f  <Plug>(coc-format-selected)
-
-augroup mygroup
-  autocmd!
-  " Setup formatexpr specified filetype(s).
-  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-  " Update signature help on jump placeholder.
-  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-augroup end
-
-" Applying codeAction to the selected region.
-" Example: `<leader>aap` for current paragraph
-xmap <leader>a  <Plug>(coc-codeaction-selected)
-nmap <leader>a  <Plug>(coc-codeaction-selected)
-
-" Remap keys for applying codeAction to the current buffer.
-nmap <leader>ac  <Plug>(coc-codeaction)
-" Apply AutoFix to problem on the current line.
-nmap <leader>qf  <Plug>(coc-fix-current)
-
-" Map function and class text objects
-" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
-xmap if <Plug>(coc-funcobj-i)
-omap if <Plug>(coc-funcobj-i)
-xmap af <Plug>(coc-funcobj-a)
-omap af <Plug>(coc-funcobj-a)
-xmap ic <Plug>(coc-classobj-i)
-omap ic <Plug>(coc-classobj-i)
-xmap ac <Plug>(coc-classobj-a)
-omap ac <Plug>(coc-classobj-a)
-
 " Remap <C-f> and <C-b> for scroll float windows/popups.
 if has('nvim-0.4.0') || has('patch-8.2.0750')
   nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
@@ -371,23 +322,6 @@ command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organize
 " provide custom statusline: lightline.vim, vim-airline.
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
-" Mappings for CoCList
-" Show all diagnostics.
-nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
-" Manage extensions.
-nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
-" Show commands.
-nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
-" Find symbol of current document.
-nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
-" Search workspace symbols.
-nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
-" Do default action for next item.
-nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
-" Do default action for previous item.
-nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
-" Resume latest coc list.
-nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 " ack.vim --- {{{
 
 " Use ripgrep for searching ⚡️
@@ -423,3 +357,4 @@ nnoremap <Up> :echo "noob"<cr>
 nnoremap <Left> :echo "noob"<cr>
 nnoremap <Right> :echo "noob"<cr>
 nnoremap <C-s> :HopWord <cr>
+inoremap {<CR> {<CR>}<C-o>O
