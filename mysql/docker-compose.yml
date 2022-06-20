@@ -1,15 +1,18 @@
-version: '3.7'
-
+version: '3.8'
 services:
   db:
+    platform: linux/adm64
     image: mysql:5.7
-    command: --default-authentication-plugin=mysql_native_password
-    volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+    cap_add:
+      - SYS_NICE
+    restart: always
     environment:
-     MYSQL_ROOT_PASSWORD: 12345678feature2
+      - MYSQL_DATABASE=default
+      - MYSQL_ROOT_PASSWORD=12345678
+    ports:
+      - '3306:3306'
+    volumes:
+      - dbx:/var/lib/mysql
 volumes:
-  db_data:
-    external: true
+  dbx:
+    driver: local
