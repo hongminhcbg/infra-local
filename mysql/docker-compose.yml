@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   db:
-    platform: linux/adm64
+    platform: linux/x86_64
     image: mysql:5.7
     cap_add:
       - SYS_NICE

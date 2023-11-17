@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:11.1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Change this to a strong password
+      MYSQL_DATABASE: mydb         # Replace with your desired database name
+      MYSQL_USER: mint             # Replace with your desired username
+      MYSQL_PASSWORD: asdF1234         # Replace with your desired password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"  # Mapping host port to container port
+
+volumes:
+  mariadb_data:
+    driver: local
