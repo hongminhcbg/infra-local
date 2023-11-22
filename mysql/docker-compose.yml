@@ -10,9 +10,9 @@ services:
       - MYSQL_DATABASE=default
       - MYSQL_ROOT_PASSWORD=12345678
     ports:
-      - '3306:3306'
+      - '3307:3306'
     volumes:
-      - dbx:/var/lib/mysql
+      - lpdb:/var/lib/mysql
 volumes:
-  dbx:
+  lpdb:
     driver: local
