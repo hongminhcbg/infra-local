@@ -2,7 +2,7 @@ version: '3.8'
 services:
   db:
     platform: linux/x86_64
-    image: mysql:5.7
+    image: mysql:8.4.0
     cap_add:
       - SYS_NICE
     restart: always
@@ -12,7 +12,7 @@ services:
     ports:
       - '3307:3306'
     volumes:
-      - lpdb:/var/lib/mysql
+      - lpdb8:/var/lib/mysql
 volumes:
-  lpdb:
+  lpdb8:
     driver: local
