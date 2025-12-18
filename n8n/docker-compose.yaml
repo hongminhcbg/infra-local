@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: 'Asia/Ho_Chi_Minh'
+      TZ: 'Asia/Ho_Chi_Minh'
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RUNNERS_ENABLED: "true"
+      NODE_FUNCTION_ALLOW_EXTERNAL: "moment,lodash,node-fetch"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+  mysql8:
+    platform: linux/x86_64
+    image: mysql:8.4.0
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      - MYSQL_DATABASE=default
+      - MYSQL_ROOT_PASSWORD=12345678
+    ports:
+      - '3307:3306'
+    volumes:
+      - lpdb8:/var/lib/mysql
+volumes:
+  n8n_data:
+  lpdb8:
