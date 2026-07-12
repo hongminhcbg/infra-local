@@ -1,41 +1,41 @@
 ---
 name: gitlab-review
-description: Review a GitLab merge request locally with full repository context. Use when the user wants to review a GitLab MR — e.g. "/gitlab-review 977", "review MR 981", or when they paste a GitLab merge-request URL. Fetches the MR diff via the GitLab API, checks out the MR head in an isolated git worktree, gathers cross-file context, and prints ranked findings. Reviews only — it never posts comments.
+description: Review a GitLab merge request locally using only git — no API key or token required. Use when the user wants to review a GitLab MR — e.g. "/gitlab-review 977", "review MR 981", or when they paste a GitLab merge-request URL. Fetches the MR through GitLab merge-request refs over the existing git remote, checks out the head in an isolated worktree, gathers cross-file context, and prints ranked findings. Reviews only — it never posts comments.
 ---
 
-# GitLab MR Review (local, manual)
+# GitLab MR Review (local, manual, no API key)
 
-Review one GitLab merge request the way a tech lead would: fetch it, read it with full
-repository context, and produce ranked findings. **This skill reviews only — it never posts
-comments to GitLab.** Print the findings and stop.
+Review one GitLab merge request the way a tech lead would: fetch it with git, read it with full
+repository context, and produce ranked findings. **No GitLab API token is required** — everything
+comes through your existing git access to `origin` (SSH or stored credential). **This skill
+reviews only — it never posts comments to GitLab.** Print the findings and stop.
 
 ## Inputs
-- **MR reference**: an IID (e.g. `977`) or a full MR URL. If given a URL, extract the project
-  path and the IID from it (`.../<group>/<project>/-/merge_requests/<iid>`).
-- **Project**: derived automatically from the `origin` remote. Override with `GITLAB_PROJECT`.
-- **Host**: derived from `origin` (defaults to `gitlab.com`). Override with `GITLAB_HOST`.
-- **Auth**: `GITLAB_TOKEN` must be set in the environment. Never print it, never write it to a
-  file. If it is unset, stop and tell the user to `export GITLAB_TOKEN=...`.
+- **MR reference**: an IID (e.g. `977`) or a full MR URL (extract the IID from
+  `.../-/merge_requests/<iid>`).
+- **Target branch** (optional): the MR's base branch. Defaults to the repo's default branch; ask
+  the user if the MR targets a different branch.
+- **Auth**: none. No API token or key of any kind, and no API calls — only git over the
+  `origin` remote.
 
 ## Procedure
 
-### 1. Fetch the MR
-Run the helper (it reads `GITLAB_TOKEN` and derives host/project from `origin`):
-- Metadata: `bash .agent/skills/gitlab-review/scripts/fetch_mr.sh <iid>`
-- Diff + refs: `bash .agent/skills/gitlab-review/scripts/fetch_mr.sh <iid> changes`
+### 1. Fetch the MR (git only)
+Run the helper — it uses GitLab's merge-request refs over the `origin` remote, no API key:
+`bash .agent/skills/gitlab-review/scripts/fetch_mr_git.sh <iid> [target_branch]`
 
-From the `changes` response, note `diff_refs.base_sha` / `start_sha` / `head_sha`, the
-`changes[]` entries (each with `old_path`, `new_path`, `diff`, `new_file`, `deleted_file`,
-`renamed_file`), and the source/target branches. From the metadata note title, description,
-author, and target branch.
+It fetches `refs/merge-requests/<iid>/head` into `refs/mr/<iid>` and prints:
+- **authors** and **commit messages** (title + intent, from `git log`),
+- the **changed files** (name-status), and
+- the **diff** against the base branch.
+
+If the fetch fails because the instance disabled merge-request refs, fall back to the MR's
+**source branch by name**: `git fetch origin <source-branch>` and diff it against the base
+(`git diff origin/<target>...origin/<source-branch>`). Ask the user for the source branch name.
 
 ### 2. Check out the MR head in an isolated worktree
-Do NOT disturb the user's working tree. Fetch the MR ref and add a detached worktree in the
-scratch dir:
-```
-git fetch origin refs/merge-requests/<iid>/head
-git worktree add --detach <scratch>/gl-mr-<iid> FETCH_HEAD
-```
+Do NOT disturb the user's working tree. Add a detached worktree at the fetched ref:
+`git worktree add --detach <scratch>/gl-mr-<iid> refs/mr/<iid>`
 Use that worktree for all Read/Grep. **Always** remove it when finished (even if the review is
 cut short): `git worktree remove --force <scratch>/gl-mr-<iid>`.
 
@@ -68,7 +68,7 @@ Print a short header (files touched, overall risk, blocking/nit counts), then th
 act on any finding.
 
 ## Guardrails
-- Read `GITLAB_TOKEN` only from the environment; never echo, log, or persist it.
+- No API tokens are used or needed — the skill authenticates only via your existing git remote.
 - Confine Read/Grep to the repo and the MR worktree.
 - Remove the worktree at the end, even if the review stops early.
-- This skill is read-only toward GitLab. Posting comments is a separate, explicit action.
+- Read-only toward GitLab — this skill never posts.
