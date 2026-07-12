@@ -118,7 +118,7 @@ if err != nil {
 }
 ```
 
-### 1.7 Nerver return error only
+### 1.7 Never return error only
 
 ```go
 // ❌ Wrong: losing context
