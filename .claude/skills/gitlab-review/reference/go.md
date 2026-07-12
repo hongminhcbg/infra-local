@@ -118,6 +118,31 @@ if err != nil {
 }
 ```
 
+### 1.7 Never return error only
+
+```go
+// ❌ Wrong: losing context
+if err != nil {
+    return err
+}
+
+// ❌ Wrong: using %v loses error chain
+if err != nil {
+    return fmt.Errorf("failed: %v", err)
+}
+
+// ❌ Wrong: if error occurred, no log to debug
+if err != nil {
+    return fmt.Errorf("failed to process user %d: %w", userID, err)
+}
+
+// ✅ Correct: log and return error
+if err != nil {
+    log.Error(err, "ACBDoDefErr")
+    return erp.StaticError
+}
+
+```
 ---
 
 ## 2. Concurrency and Goroutines
